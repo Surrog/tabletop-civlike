@@ -1,6 +1,6 @@
 
 #include <iostream>
-#include "resolver_config.h"
+#include "resolver_config.hpp"
 
 int main(int argc, char ** argv)
 {
