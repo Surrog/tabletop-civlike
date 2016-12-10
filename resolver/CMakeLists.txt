@@ -7,6 +7,7 @@ set (RESOLVER_VERSION_MINOR 1)
 
 set (RESOLVER_SERVER_DIR ${PROJECT_SOURCE_DIR}/resolver_server)
 set (GENERATED_SOURCES_DIR ${PROJECT_SOURCE_DIR}/generated_sources)
+set (JSONCPP_SOURCES_DIR ${PROJECT_SOURCE_DIR}/jsoncpp_amalgamated)
 
 # cmake settings
 configure_file (
@@ -16,12 +17,17 @@ configure_file (
 
 include_directories("${GENERATED_SOURCES_DIR}")
 include_directories("${RESOLVER_SERVER_DIR}")
+include_directories("${JSONCPP_SOURCES_DIR}")
 
-set (GENERATED_HEADER ${GENERATED_SOURCES_DIR}/resolver_config.hpp)
+set (GENERATED_SOURCES ${GENERATED_SOURCES_DIR}/resolver_config.hpp)
+
+set (JSONCPP_SOURCES ${JSONCPP_SOURCES_DIR}/jsoncpp.cpp
+	${JSONCPP_SOURCES_DIR}/json/json.h
+	${JSONCPP_SOURCES_DIR}/json/json-forwards.h
+	)
 
 set (RESOLVER_SOURCES 
-	${GENERATED_HEADER}
 	${RESOLVER_SERVER_DIR}/main.cpp
 	)
 
-add_executable(resolver_server ${RESOLVER_SOURCES})
+add_executable(resolver_server ${RESOLVER_SOURCES} ${GENERATED_SOURCES} ${JSONCPP_SOURCES})
