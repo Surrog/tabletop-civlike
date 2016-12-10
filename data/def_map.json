@@ -1,0 +1,20 @@
+{
+  "DTI00001":{
+    "name":"plain",
+    "description":"A flat piece of land",
+    "infrastructure":3,
+    "cover":0,
+    "texture":"plain.png"
+  },
+  "DTI00002":{
+    "name":"hill",
+    "description":"A hilly land",
+    "infrastructure":2,
+    "cover":1,
+    "texture":"hill.png"
+  }
+}
+
+*** NOTE ***
+Infrastructure permet de calculer le cout du deplacement.
+cout = 1/infrastructure
