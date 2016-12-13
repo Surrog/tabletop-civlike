@@ -1,0 +1,3 @@
+[submodule "resolver/xtsslib"]
+	path = resolver/xtsslib
+	url = https://github.com/Surrog/xtsslib.git
