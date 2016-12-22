@@ -14,6 +14,7 @@ struct coord
    int z;
 };
 
+// order.json
 struct order
 {
    enum T_type
@@ -22,7 +23,8 @@ struct order
       FIRE
    };
 
-   reference ref;
+   reference id;
+   reference unit_source;
    T_type type;
    coord target;
 };
@@ -32,50 +34,77 @@ struct map
 {
    std::string name;
    std::string description;
-   int width;
-   int length;
-   std::vector<std::pair<coord, std::string>> grid;
+   int diameter;
+   std::vector<std::pair<coord, reference>> grid;
 };
 
-//def_unit.json
+//def_attack.json & def_defense.json
 struct unit_action
 {
+   reference id;
+   std::string name;
+   std::string description;
    int soft;
    int hard;
    int range;
    int cost;
 };
 
-//def_unit.json
+//unit.json
 struct unit
 {
-   reference ref;
-   std::string name;
-   std::string description;
-   std::vector<unit_action> attacks;
-   std::vector<unit_action> defenses;
-   int health;
-   int action_point;
-   int mobility;
-   std::string texture;
+   reference id;
+   reference owner;
+   reference type;
+   coord pos;
+   int endurance;
 };
 
-//def_player.json
+//def_unit.json
+struct unit_definition
+{
+	reference id;
+	std::string name;
+	std::string definition;
+	std::vector<reference> attack;
+	std::vector<reference> defense;
+	std::vector<order::T_type> order_accessible;
+	int action_point;
+	int cover_usage;
+	std::string texture;
+};
+
+//player.json
 struct player
 {
-   reference ref;
+   reference id;
    std::string name;
+   std::string description;
+   coord rally_point;
+   char team;
 };
 
 //def_map.json
 struct terrain
 {
-   reference ref;
+   reference id;
    std::string name;
    std::string description;
    uint32_t infrastructure;
    uint32_t cover;
    std::string texture_path;
+};
+
+
+struct data
+{
+	std::vector<order> orders;
+	map current_map;
+	std::vector<unit_action> actions;
+	std::vector<unit> units;
+	std::vector<unit_definition> unit_defs;
+	std::vector<player> players;
+	std::vector<terrain> terrains;
 };
 
 #endif //DATA_HPP
