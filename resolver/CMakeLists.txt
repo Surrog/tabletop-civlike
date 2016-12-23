@@ -47,6 +47,7 @@ set (RESOLVER_SOURCES
 	${RESOLVER_SERVER_DIR}/main.cpp
 	${RESOLVER_SERVER_DIR}/data.hpp
 	${RESOLVER_SERVER_DIR}/reference.hpp
+	${RESOLVER_SERVER_DIR}/reference.cpp
 	${RESOLVER_SERVER_DIR}/data_parser.hpp
 	)
 
