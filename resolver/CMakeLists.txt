@@ -46,9 +46,11 @@ set (JSONCPP_SOURCES ${JSONCPP_SOURCES_DIR}/jsoncpp.cpp
 set (RESOLVER_SOURCES 
 	${RESOLVER_SERVER_DIR}/main.cpp
 	${RESOLVER_SERVER_DIR}/data.hpp
+	${RESOLVER_SERVER_DIR}/data.cpp
 	${RESOLVER_SERVER_DIR}/reference.hpp
 	${RESOLVER_SERVER_DIR}/reference.cpp
 	${RESOLVER_SERVER_DIR}/data_parser.hpp
+	${RESOLVER_SERVER_DIR}/data_parser.cpp
 	)
 
 

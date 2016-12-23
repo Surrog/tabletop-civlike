@@ -2,25 +2,25 @@
   "UNI00001":{
     "owner":"PLY00001",
     "type":"DUN00001",
-    "position":"2:-2",
-    "endurance":"100"
+    "position":[2,-2],
+    "endurance":100
   },
   "UNI00002":{
     "owner":"PLY00001",
     "type":"DUN00004",
-    "position":"3:-3",
-    "endurance":"60"
+    "position":[3,-3],
+    "endurance":60
   },
   "UNI00003":{
     "owner":"PLY00002",
     "type":"DUN00002",
-    "position":"-2:3",
-    "endurance":"30"
+    "position":[-2,3],
+    "endurance":30
   },
   "UNI00004":{
     "owner":"PLY00002",
     "type":"DUN00003",
-    "position":"-3:3",
-    "endurance":"70"
+    "position":[-3,3],
+    "endurance":70
   }
 }

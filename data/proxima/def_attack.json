@@ -4,7 +4,7 @@
     "description":"",
     "soft":60,
     "hard":0,
-    "range":"0",
+    "range":[0],
     "cost":0
   },
   "ATT00002":{
@@ -12,7 +12,7 @@
     "description":"",
     "soft":10,
     "hard":80,
-    "range":"0",
+    "range":[0],
     "cost":-1
   },
   "ATT00003":{
@@ -20,7 +20,7 @@
     "description":"",
     "soft":0,
     "hard":40,
-    "range":"1-2",
+    "range":[1,2],
     "cost":-1
   },
   "ATT00004":{
@@ -28,7 +28,7 @@
     "description":"",
     "soft":10,
     "hard":50,
-    "range":"0-1",
+    "range":[0, 1],
     "cost":1
   },
   "ATT00005":{
@@ -36,7 +36,7 @@
     "description":"",
     "soft":50,
     "hard":10,
-    "range":"1-4",
+    "range":[1,4],
     "cost":2
   }
 }
