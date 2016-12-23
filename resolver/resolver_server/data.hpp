@@ -46,7 +46,7 @@ struct unit_action
    std::string description;
    int soft;
    int hard;
-   int range;
+   std::pair<int, int> range;
    int cost;
 };
 
@@ -96,11 +96,12 @@ struct terrain
 };
 
 
-struct data
+struct game_data
 {
 	std::vector<order> orders;
 	map current_map;
-	std::vector<unit_action> actions;
+   std::vector<unit_action> attack_action;
+   std::vector<unit_action> defense_action;
 	std::vector<unit> units;
 	std::vector<unit_definition> unit_defs;
 	std::vector<player> players;
