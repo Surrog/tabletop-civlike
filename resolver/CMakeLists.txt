@@ -51,7 +51,11 @@ set (RESOLVER_SOURCES
 	${RESOLVER_SERVER_DIR}/reference.cpp
 	${RESOLVER_SERVER_DIR}/data_parser.hpp
 	${RESOLVER_SERVER_DIR}/data_parser.cpp
-	)
+	${RESOLVER_SERVER_DIR}/data_dumper.hpp
+	${RESOLVER_SERVER_DIR}/data_dumper.cpp
+	${RESOLVER_SERVER_DIR}/game_resolver.cpp
+	${RESOLVER_SERVER_DIR}/game_resolver.hpp
+)
 
 
 add_executable(resolver_server ${RESOLVER_SOURCES} ${GENERATED_SOURCES} ${JSONCPP_SOURCES})

@@ -34,17 +34,19 @@ public:
       PREFIX_SIZE = 4
    };
 
-   static const std::array<std::array<const char, PREFIX_SIZE>, SIZE> converter_array;
+   static const std::array<astd::string_view, SIZE> converter_array;
 
    reference() = default;
 
    reference(astd::string_view str);
 
-   bool operator ==(const reference& rval);
+   bool operator ==(const reference& rval) const;
 
-   bool operator!=(const reference& rval);
+   bool operator!=(const reference& rval) const;
 
-   bool operator<(const reference& rval);
+   bool operator<(const reference& rval) const;
+
+   std::array<char, PREFIX_SIZE + 5> serialize() const;
 };
 
 std::ostream& operator<<(std::ostream& stream, const reference& ref);

@@ -2,23 +2,23 @@
 
 #include <iterator>
 
-const std::array< std::array<char, 5>, order::SIZE> order::converter_arr
+const std::array< astd::string_view, order::SIZE> order::converter_arr
 = {
 	"NONE"
 	, "MOVE"
 	, "FIRE"
+   , "BUILD"
 };
 
 order::T_type order::parse(astd::string_view str)
 {
-	auto it = std::find_if(converter_arr.begin(), converter_arr.end(), [&str](auto& arr) {
-		return std::equal(arr.begin(), arr.end(), str.begin());
-	});
+	auto it = std::find(converter_arr.begin(), converter_arr.end(), str);
+	
 	if (it != converter_arr.end())
 	{
 		return static_cast<order::T_type>(std::distance(converter_arr.begin(), it));
 	}
-	std::cerr << "WARNING " << str << " is not a reconized order" << std::endl;
+	std::cerr << "WARNING : " << str << " is not a reconized order" << std::endl;
 	return order::NONE;
 }
 
@@ -26,11 +26,11 @@ astd::string_view order::serialize(order::T_type type)
 {
 	if (std::size_t(type) < converter_arr.size())
 	{
-		return astd::string_view(converter_arr[type].data());
+      return converter_arr[type];
 	}
 	else
 	{
-		std::cerr << "WARNING order::" << type << " is not correctly serialized" << std::endl;
-		return astd::string_view(converter_arr[0].data());
+		std::cerr << "WARNING : order::" << type << " is not correctly serialized" << std::endl;
+		return converter_arr[0];
 	}
 }

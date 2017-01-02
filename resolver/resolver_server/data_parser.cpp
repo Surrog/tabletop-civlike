@@ -41,12 +41,14 @@ int data_parser::parse_def_attack(const astd::filesystem::path& path)
 			auto& range_container = current_obj["range"];
 			if (!range_container.size() || range_container.size() > 2)
 			{
+            std::cerr << path << std::endl;
 				std::cerr << "unrecognized range for " << acc.id << std::endl;
 			}
-			std::size_t i = 0;
+			std::size_t range_index = 0;
 			for (auto& num : range_container)
 			{
-				acc.range[i % acc.range.size()] = num.asInt();
+				acc.range[range_index % acc.range.size()] = num.asInt();
+            range_index++;
 			}
 
 			acc.cost = current_obj["cost"].asInt();
@@ -412,13 +414,13 @@ coordinate data_parser::parse_coord_from_value(const Json::Value& value)
 		result.z = z_it->asInt();
 		if ((result.x + result.y + result.z) != 0)
 		{
-			std::cerr << "WARNING coordinate " << value << " not valid (sum not equal to zero)" << std::endl;
+			std::cerr << "WARNING : coordinate " << value << " not valid (sum not equal to zero)" << std::endl;
 		}
 	}
 
 	if (value.size() != 2 && value.size() != 3)
 	{
-		std::cerr << "WARNING coordinate " << value << "not valid (size != 2 || 3)" << std::endl;
+		std::cerr << "WARNING : coordinate " << value << "not valid (size != 2 || 3)" << std::endl;
 	}
 
 	return result;

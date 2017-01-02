@@ -10,7 +10,7 @@
 #include <cstddef>
 #include <fstream>
 
-struct data_parser {
+class data_parser {
 public:
    enum error_code : int
    {
