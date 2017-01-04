@@ -137,6 +137,7 @@ private:
    unit& get_unit(const reference& ref);
    std::vector<std::reference_wrapper<unit>> get_units(const coordinate& ref);
    std::vector<std::reference_wrapper<const unit>> get_units(const coordinate& ref) const;
+   bool has_unit(const coordinate& coord) const;
    unit_action calculate_unit_defense(const unit_definition& unit_def) const;
 };
 

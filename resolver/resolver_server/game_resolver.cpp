@@ -219,7 +219,7 @@ int game_resolver::close_combat_action()
 		unit_per_case[unit.pos].push_back(unit);
 	}
 
-	for (const auto& pair : unit_per_case)
+	for (auto& pair : unit_per_case)
 	{
 		if (pair.second.size() > 1)
 		{
@@ -236,13 +236,31 @@ int game_resolver::close_combat_action()
 					try_attack(unit.get(), pair.first, false);
 				}
 			}
-			//std::sort(pair.second.cbegin(), pair.second.cend(), [](const auto& lval, const auto& rval)
-			//{
-			//	bool result = lval.get().endurance < rval.get().endurance;
-			//	if (lval.get().endurance == rval.get().endurance)
-			//		result = lval.get().action_point_remaining < rval.get().action_point_remaining;
-			//	return result;
-			//});
+
+			std::sort(pair.second.begin(), pair.second.end(), [](const auto& lval, const auto& rval)
+			{
+				bool result = lval.get().endurance < rval.get().endurance;
+				if (lval.get().endurance == rval.get().endurance)
+					result = lval.get().action_point_remaining < rval.get().action_point_remaining;
+				return result;
+			});
+
+			auto neigh = neighbors(pair.first);
+			while (pair.second.size() > 1)
+			{
+				auto& pla = get_player(pair.second.back().get().owner);
+				std::sort(neigh.begin(), neigh.end(), [&pla, this](const auto& lval, const auto& rval)
+				{
+					return distance(lval, pla.rally_point[0]) < distance(rval, pla.rally_point[0]);
+				});
+				
+				auto it = std::find_if_not(neigh.begin(), neigh.end(), has_unit);
+				if (it != neigh.end())
+					pair.second.back().get().pos = *it;
+				else
+					pair.second.back().get().endurance = 0;
+				pair.second.pop_back();
+			}
 		}
 	}
 
@@ -325,7 +343,7 @@ std::pair<float, std::vector<coordinate>> game_resolver::find_path_linear(const 
 
 std::uint32_t game_resolver::distance(const coordinate& origin, const coordinate& target) const
 {
-	return std::abs(origin.x - target.x) + std::abs(origin.y - target.y) + std::abs(origin.z - target.z) / 2;
+	return std::max({ std::abs(origin.x - target.x), std::abs(origin.y - target.y), std::abs(origin.z - target.z) });
 }
 
 float game_resolver::get_movement_cost(const coordinate& coord, const player& pla) const
@@ -481,6 +499,14 @@ std::vector<std::reference_wrapper<const unit>> game_resolver::get_units(const c
 	}
 
 	return result;
+}
+
+bool game_resolver::has_unit(const coordinate & coord) const
+{
+	return std::any_of(_data.units.begin(), _data.units.end(), [&coord](const auto& unit)
+	{
+		return unit.pos == coord;
+	});
 }
 
 
