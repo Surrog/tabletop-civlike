@@ -532,6 +532,8 @@ const unit_action& game_resolver::get_attack(const reference& ref) const
 	auto it = std::find_if(_data.attack_action.begin(), _data.attack_action.end(), [&ref](const auto& val) {return ref == val.id; });
 	if (it != _data.attack_action.end())
 		return *it;
+	
+	std::cerr << "WARNING : No attack with ref " << ref << std::endl;
 	return bad_unit_action;
 }
 
@@ -539,9 +541,10 @@ const unit_action& game_resolver::get_defense(const reference& ref) const
 {
 	assert(ref.type == reference::DEF);
 
-	auto it = std::find_if(_data.attack_action.begin(), _data.attack_action.end(), [&ref](const auto& val) {return ref == val.id; });
-	if (it != _data.attack_action.end())
+	auto it = std::find_if(_data.defense_action.begin(), _data.defense_action.end(), [&ref](const auto& val) {return ref == val.id; });
+	if (it != _data.defense_action.end())
 		return *it;
+	std::cerr << "WARNING : No defense with ref " << ref << std::endl;
 	return bad_unit_action;
 }
 

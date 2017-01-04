@@ -12,6 +12,6 @@
   "ORD00003":{
     "unit":"UNI00002",
     "order":"FIRE",
-    "target":[1,0]
+    "target":[1, -1]
   }
 }

@@ -5,7 +5,7 @@
     "attack":["ATT00001"],
     "defense":["DEF00001"],
     "actions":["MOVE"],
-    "action_points":1,
+    "action_points":5,
     "cover_usage":2,
     "texture":"infantry.png"
   },
@@ -15,7 +15,7 @@
     "attack":["ATT00001","ATT00003"],
     "defense":["DEF00001"],
     "actions":["MOVE", "FIRE"],
-    "action_points":1,
+    "action_points":5,
     "cover_usage":1.5,
     "texture":"infantry_mortar.png"
   },
@@ -25,7 +25,7 @@
     "attack":["ATT00001","ATT00004"],
     "defense":["DEF00002"],
     "actions":["MOVE", "FIRE"],
-    "action_points":3,
+    "action_points":5,
     "cover_usage":1,
     "texture":"tank.png"
   },
@@ -35,7 +35,7 @@
     "attack":["ATT00005"],
     "defense":["DEF00003"],
     "actions":["MOVE", "FIRE"],
-    "action_points":2,
+    "action_points":5,
     "cover_usage":1,
     "texture":"howitzer.png"
   }
