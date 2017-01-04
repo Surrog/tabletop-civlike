@@ -43,9 +43,7 @@ private:
 	struct pair_float_coord_compare
 	{
 		template <typename T>
-		bool operator()(const T& lval
-			, const T& rval
-			)
+		bool operator()(const T& lval, const T& rval)
 		{
 			return lval.first > rval.first;
 		}

@@ -128,7 +128,7 @@ int data_parser::parse_def_map(const astd::filesystem::path& path)
 			acc.infrastructure = current_obj["infrastructure"].asFloat();
 			if (acc.infrastructure == 0)
 			{
-				std::cerr << "WARNING : infrastructure cannot be zero ! min=1" << acc.id << std::endl;
+				std::cerr << "WARNING : infrastructure cannot be zero !" << acc.id << std::endl;
 				acc.infrastructure = 1.f;
 			}
 			acc.cover = current_obj["cover"].asInt();
