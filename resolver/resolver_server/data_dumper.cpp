@@ -212,6 +212,11 @@ int data_dumper::dump_order(const astd::filesystem::path& path, const std::vecto
          json_order["unit"] = order.unit_source.serialize().data();
          json_order["order"] = order::serialize(order.type).data();
          json_order["target"] = coord_to_json_value(order.target);
+		 if (order.comment.size())
+		 {
+			 json_order["comment"] = order.comment;
+		 }
+
          root[order.id.serialize().data()].append(json_order);
       }
 

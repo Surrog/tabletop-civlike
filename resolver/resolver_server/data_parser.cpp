@@ -126,11 +126,6 @@ int data_parser::parse_def_map(const astd::filesystem::path& path)
 			acc.name = current_obj["name"].asString();
 			acc.description = current_obj["description"].asString();
 			acc.infrastructure = current_obj["infrastructure"].asFloat();
-			if (acc.infrastructure == 0)
-			{
-				std::cerr << "WARNING : infrastructure cannot be zero !" << acc.id << std::endl;
-				acc.infrastructure = 1.f;
-			}
 			acc.cover = current_obj["cover"].asInt();
 			acc.texture_path = current_obj["texture"].asString();
 

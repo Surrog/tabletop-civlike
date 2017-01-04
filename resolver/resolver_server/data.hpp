@@ -55,6 +55,7 @@ struct order
    reference unit_source;
    T_type type = NONE;
    coordinate target;
+   std::string comment;
 
    static const std::array< astd::string_view, SIZE> converter_arr;
    static T_type parse(astd::string_view str);
