@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <limits>
 #include <functional>
+#include <cassert>
 #include "boost/container/flat_map.hpp"
 
 const std::array<int (game_resolver::*)(const order& order), order::SIZE> game_resolver::order_state_machine
@@ -61,7 +62,7 @@ void game_resolver::resolve()
 
 	for (auto& unit : _data.units)
 	{
-		unit.action_point_remaining = get_unit_def(unit.id).action_point;
+		unit.action_point_remaining = get_unit_def(unit.type).action_point;
 	}
 
 	while (_data.orders.size() && _data.orders.back().type != order::BUILD)
@@ -77,7 +78,7 @@ void game_resolver::resolve()
 	close_combat_action();
 	bring_out_the_dead();
 
-	
+
 	while (_data.orders.size())
 	{
 		if (execute_order(_data.orders.back()) != 0)
@@ -146,11 +147,7 @@ unit_action game_resolver::calculate_unit_defense(const unit_definition& unit_de
 
 int game_resolver::execute_fire(const order& order)
 {
-	auto result = try_attack(get_unit(order.unit_source), order.target, true);
-	if (result != NONE)
-		_order_rejected.push_back(order);
-
-	return result;
+	return try_attack(get_unit(order.unit_source), order.target, true);
 }
 
 int game_resolver::try_attack(unit& attacker_unit, const coordinate& target, bool friendly_fire)
@@ -253,8 +250,8 @@ int game_resolver::close_combat_action()
 				{
 					return distance(lval, pla.rally_point[0]) < distance(rval, pla.rally_point[0]);
 				});
-				
-				auto it = std::find_if_not(neigh.begin(), neigh.end(), has_unit);
+
+				auto it = std::find_if_not(neigh.begin(), neigh.end(), [this](const auto& val) { return has_unit(val); });
 				if (it != neigh.end())
 					pair.second.back().get().pos = *it;
 				else
@@ -286,9 +283,9 @@ void game_resolver::bring_out_the_dead()
 	_data.units.resize(std::distance(_data.units.begin(), it_new_end));
 }
 
-std::array<coordinate, 6> game_resolver::neighbors(const coordinate& coord) const
+boost::container::static_vector<coordinate, 6> game_resolver::neighbors(const coordinate& coord) const
 {
-	return std::array<coordinate, 6>{
+	boost::container::static_vector<coordinate, 6> result{
 		coordinate{ coord.x + 1	, coord.y - 1, coord.z },
 			coordinate{ coord.x + 1	, coord.y	, coord.z - 1 },
 			coordinate{ coord.x		, coord.y + 1, coord.z - 1 },
@@ -296,6 +293,15 @@ std::array<coordinate, 6> game_resolver::neighbors(const coordinate& coord) cons
 			coordinate{ coord.x - 1	, coord.y	, coord.z + 1 },
 			coordinate{ coord.x		, coord.y + 1, coord.z - 1 }
 	};
+
+
+	auto to_erase = std::remove_if(result.begin(), result.end(), [this](const auto& coord)
+	{
+		return std::max({ std::abs(coord.x), std::abs(coord.y), std::abs(coord.z) }) > _data.current_map.diameter;
+	});
+	result.erase(to_erase, result.end());
+
+	return result;
 }
 
 std::pair<float, std::vector<coordinate>> game_resolver::find_path_linear(const unit& uni, const coordinate& target) const
@@ -303,7 +309,7 @@ std::pair<float, std::vector<coordinate>> game_resolver::find_path_linear(const 
 	boost::container::flat_map<coordinate, float> visited;
 	boost::container::flat_map<coordinate, coordinate> direction;
 	std::priority_queue<std::pair<float, coordinate>, std::vector<std::pair<float, coordinate>>, pair_float_coord_compare> opened;
-	
+
 	opened.push(std::make_pair(0.f, uni.pos));
 	visited[uni.pos] = 0;
 	bool found = false;
@@ -317,13 +323,14 @@ std::pair<float, std::vector<coordinate>> game_resolver::find_path_linear(const 
 				+ static_cast<float>(distance(neighbor, target)) / 2
 				;
 
-			auto neighbor_already_visited = visited.find(opened.top().second);
+			auto neighbor_already_visited = visited.find(neighbor);
 			if (neighbor_already_visited == visited.end()
 				|| neighbor_total_cost < neighbor_already_visited->second)
 			{
-				opened.push({ neighbor_total_cost, neighbor });
-				visited[neighbor] = neighbor_total_cost;
 				direction[neighbor] = opened.top().second;
+				visited[neighbor] = neighbor_total_cost;
+
+				opened.push({ neighbor_total_cost, neighbor });
 				if (neighbor == target)
 					found = true;
 			}
@@ -348,21 +355,34 @@ std::uint32_t game_resolver::distance(const coordinate& origin, const coordinate
 
 float game_resolver::get_movement_cost(const coordinate& coord, const player& pla) const
 {
-	auto base_cost =  1.f / get_terrain(coord).infrastructure;
+	auto base_cost = get_movement_cost(coord);
 	auto units = get_units(coord);
 	if (std::any_of(units.begin(), units.end(), [&pla, this](const auto& unit)
 	{
 		return get_player(unit.get().owner).team != pla.team;
 	}))
 	{
-		base_cost += std::numeric_limits<float>::max() / 2;
+		base_cost += std::numeric_limits<float>::max() / 1.5f;
 	}
 	return base_cost;
 }
 
 float game_resolver::get_movement_cost(const coordinate& coord) const
 {
-	return 1.f / get_terrain(coord).infrastructure;
+	auto infra = get_terrain(coord).infrastructure;
+	assert(infra != 0);
+
+	return 1.f / infra;	
+}
+
+float game_resolver::get_movement_cost(const std::vector<coordinate>& coords) const
+{
+	float result = 0.f;
+	for (const auto& coord : coords)
+	{
+		result += get_movement_cost(coord);
+	}
+	return result;
 }
 
 
@@ -374,13 +394,14 @@ const terrain& game_resolver::get_terrain(const coordinate& coord) const
 	});
 	if (find_it != _data.current_map.grid.cend())
 	{
-		return get_terrain(find_it->first);
+		return get_terrain(find_it->second);
 	}
 	return bad_terrain_value;
 }
 
 const terrain& game_resolver::get_terrain(const reference& ref) const
 {
+	assert(ref.type == reference::DTI);
 	auto find_it = std::find_if(_data.terrains.cbegin(), _data.terrains.cend(),
 		[&ref](const auto& terrain)
 	{
@@ -415,18 +436,10 @@ std::vector<coordinate> game_resolver::line(const coordinate& origin, const coor
 	return result;
 }
 
-float game_resolver::get_movement_cost(const std::vector<coordinate>& coords) const
-{
-	float result = 0.f;
-	for (const auto& coord : coords)
-	{
-		result += get_movement_cost(coord);
-	}
-	return result;
-}
 
 const unit_definition& game_resolver::get_unit_def(const reference& ref) const
 {
+	assert(ref.type == reference::DUN);
 	auto find_it = std::find_if(_data.unit_defs.begin(), _data.unit_defs.end(),
 		[&ref](const auto& def)
 	{
@@ -460,6 +473,8 @@ std::vector<coordinate> game_resolver::construct_path(const boost::container::fl
 
 unit& game_resolver::get_unit(const reference& ref)
 {
+	assert(ref.type == reference::UNI);
+
 	auto it = std::find_if(_data.units.begin(), _data.units.end(),
 		[&ref](const auto& unit) {
 		return unit.id == ref;
@@ -512,6 +527,8 @@ bool game_resolver::has_unit(const coordinate & coord) const
 
 const unit_action& game_resolver::get_attack(const reference& ref) const
 {
+	assert(ref.type == reference::ATT);
+
 	auto it = std::find_if(_data.attack_action.begin(), _data.attack_action.end(), [&ref](const auto& val) {return ref == val.id; });
 	if (it != _data.attack_action.end())
 		return *it;
@@ -520,6 +537,8 @@ const unit_action& game_resolver::get_attack(const reference& ref) const
 
 const unit_action& game_resolver::get_defense(const reference& ref) const
 {
+	assert(ref.type == reference::DEF);
+
 	auto it = std::find_if(_data.attack_action.begin(), _data.attack_action.end(), [&ref](const auto& val) {return ref == val.id; });
 	if (it != _data.attack_action.end())
 		return *it;
@@ -528,6 +547,8 @@ const unit_action& game_resolver::get_defense(const reference& ref) const
 
 const player & game_resolver::get_player(const reference & ref) const
 {
+	assert(ref.type == reference::PLY);
+
 	auto it = std::find_if(_data.players.begin(), _data.players.end(), [&ref](const auto& pla)
 	{
 		return pla.id == ref;

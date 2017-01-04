@@ -128,7 +128,7 @@ struct terrain
    reference id;
    std::string name;
    std::string description;
-   float infrastructure = std::numeric_limits<float>::max() / 1.5f; //let's avoid overflow
+   float infrastructure = 0.f; //let's avoid overflow
    std::int32_t cover = 0;
    std::string texture_path;
 };
