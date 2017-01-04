@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 #include <utility>
+#include <limits>
+#include <ostream>
 
 #include "reference.hpp"
 #include "astring_view.hpp"
@@ -14,6 +16,28 @@ struct coordinate
    std::int32_t y = 0;
    std::int32_t z = 0;
 };
+
+static std::ostream& operator<<(std::ostream& stream, const coordinate& coord)
+{
+	stream << coord.x << ' ' << coord.y << ' ' << coord.z;
+	return stream;
+}
+
+static bool operator==(const coordinate& lval, const coordinate& rval)
+{
+	return lval.x == rval.x && lval.y == rval.y && lval.z == rval.z;
+}
+
+static bool operator<(const coordinate& lval, const coordinate& rval)
+{
+	bool result = lval.x < rval.x;
+	if (lval.x == rval.x)
+		result = lval.y < rval.y;
+	if(lval.y == rval.y)
+		result = lval.z < rval.z;
+	return result;
+}
+
 
 // order.json
 struct order
@@ -54,7 +78,7 @@ struct unit_action
    std::string description;
    std::int32_t soft = 0;
    std::int32_t hard = 0;
-   std::array<std::int32_t, 2> range = { 0 };
+   std::array<std::uint32_t, 2> range = { 0 };
    std::int32_t cost = 0;
 };
 
@@ -66,6 +90,12 @@ struct unit
    reference type;
    coordinate pos;
    std::int32_t endurance = 0;
+   std::int32_t action_point_remaining = 0;
+
+   enum 
+   {
+	   ENDURANCE_MAX = 100
+   };
 };
 
 //def_unit.json
@@ -89,7 +119,7 @@ struct player
    std::string name;
    std::string description;
    std::vector<coordinate> rally_point;
-   char team = 'A';
+   char team = 0;
 };
 
 //def_map.json
@@ -98,7 +128,7 @@ struct terrain
    reference id;
    std::string name;
    std::string description;
-   std::int32_t infrastructure = 0;
+   float infrastructure = std::numeric_limits<float>::max() / 1.5f; //let's avoid overflow
    std::int32_t cover = 0;
    std::string texture_path;
 };

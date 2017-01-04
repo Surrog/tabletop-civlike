@@ -47,7 +47,7 @@ int data_parser::parse_def_attack(const astd::filesystem::path& path)
 			std::size_t range_index = 0;
 			for (auto& num : range_container)
 			{
-				acc.range[range_index % acc.range.size()] = num.asInt();
+				acc.range[range_index % acc.range.size()] = num.asUInt();
             range_index++;
 			}
 
@@ -125,7 +125,11 @@ int data_parser::parse_def_map(const astd::filesystem::path& path)
 			acc.id = reference{ obj_names[i] };
 			acc.name = current_obj["name"].asString();
 			acc.description = current_obj["description"].asString();
-			acc.infrastructure = current_obj["infrastructure"].asInt();
+			if (acc.infrastructure == 0)
+			{
+				std::cerr << "WARNING : infrastructure cannot be zero ! min=1" << acc.id << std::endl;
+				acc.infrastructure = 1.f;
+			}
 			acc.cover = current_obj["cover"].asInt();
 			acc.texture_path = current_obj["texture"].asString();
 

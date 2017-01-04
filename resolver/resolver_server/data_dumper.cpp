@@ -105,7 +105,7 @@ int data_dumper::dump_def_map(const astd::filesystem::path& path, const std::vec
          Json::Value action_value;
          action_value["name"] = terrain.name;
          action_value["description"] = terrain.description;
-         action_value["infrastructure"] = terrain.infrastructure;
+         action_value["infrastructure"] = unsigned int(terrain.infrastructure);
          action_value["cover"] = terrain.cover;
          action_value["texture"] = terrain.texture_path;
 
