@@ -301,12 +301,11 @@ boost::container::static_vector<coordinate, 6> game_resolver::neighbors(const co
 
 std::pair<float, std::vector<coordinate>> game_resolver::find_path_linear(const unit& uni, const coordinate& target) const
 {
-	boost::container::flat_map<coordinate, float> visited;
-	boost::container::flat_map<coordinate, coordinate> direction;
+	boost::container::flat_map<coordinate, pair_float_coordinate> visited;
 	std::priority_queue<std::pair<float, coordinate>, std::vector<std::pair<float, coordinate>>, pair_float_coord_compare> opened;
 
 	opened.push(std::make_pair(0.f, uni.pos));
-	visited[uni.pos] = 0;
+	visited[uni.pos] = { 0.f, {} };
 	bool found = false;
 
 	while (opened.size() && !found)
@@ -318,12 +317,11 @@ std::pair<float, std::vector<coordinate>> game_resolver::find_path_linear(const 
 				+ static_cast<float>(distance(neighbor, target)) / 2
 				;
 
-			auto neighbor_already_visited = visited.find(neighbor);
-			if (neighbor_already_visited == visited.end()
-				|| neighbor_total_cost < neighbor_already_visited->second)
+			auto& visited_neighbor_value = visited[neighbor];
+			if (neighbor_total_cost < visited_neighbor_value.cost)
 			{
-				direction[neighbor] = opened.top().second;
-				visited[neighbor] = neighbor_total_cost;
+				visited_neighbor_value.cost = neighbor_total_cost;
+				visited_neighbor_value.coordinate_from = opened.top().second;
 
 				opened.push({ neighbor_total_cost, neighbor });
 				if (neighbor == target)
@@ -336,7 +334,7 @@ std::pair<float, std::vector<coordinate>> game_resolver::find_path_linear(const 
 	std::pair<float, std::vector<coordinate>> result;
 	if (found)
 	{
-		result.second = construct_path(direction, target);
+		result.second = construct_path(visited, target);
 		result.first = get_movement_cost(result.second);
 	}
 	return result;
@@ -449,7 +447,7 @@ const unit_definition& game_resolver::get_unit_def(const reference& ref) const
 	return bad_unit_def_value;
 }
 
-std::vector<coordinate> game_resolver::construct_path(const boost::container::flat_map<coordinate, coordinate>& directions, const coordinate& target)
+std::vector<coordinate> game_resolver::construct_path(const boost::container::flat_map<coordinate, pair_float_coordinate>& directions, const coordinate& target)
 {
 	std::vector<coordinate> result;
 	result.reserve(6);
@@ -459,7 +457,7 @@ std::vector<coordinate> game_resolver::construct_path(const boost::container::fl
 	while (start_pos != end)
 	{
 		result.push_back(start_pos->first);
-		start_pos = directions.find(start_pos->second);
+		start_pos = directions.find(start_pos->second.coordinate_from);
 	}
 
 	return result;

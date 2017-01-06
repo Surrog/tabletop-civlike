@@ -40,6 +40,12 @@ private:
 	game_data _data;
 	int _status = 0;
 
+	struct pair_float_coordinate 
+	{ 
+		float cost = std::numeric_limits<float>::max(); 
+		coordinate coordinate_from; 
+	};
+
 	struct pair_float_coord_compare
 	{
 		template <typename T>
@@ -62,7 +68,7 @@ private:
 
 	std::pair<float, std::vector<coordinate>> find_path_linear(const unit& pos, const coordinate& destination) const;
 
-	static std::vector<coordinate> construct_path(const boost::container::flat_map<coordinate, coordinate>& directions, const coordinate& target);
+	static std::vector<coordinate> construct_path(const boost::container::flat_map<coordinate, pair_float_coordinate>& directions, const coordinate& target);
 	template<typename T>
 	coordinate flood_search_first(const coordinate& pos, const T& func, std::size_t distance_max = 0) const
 	{
