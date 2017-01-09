@@ -9,7 +9,7 @@ include (xtsslib/utility.cmake)
 
 # the version number
 set (RESOLVER_VERSION_MAJOR 0)
-set (RESOLVER_VERSION_MINOR 1)
+set (RESOLVER_VERSION_MINOR 2)
 
 find_boost_lib("program_options")
 
