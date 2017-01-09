@@ -29,6 +29,6 @@ Usage
   resolver_server [--help] [-o <output_path>] [-i] input_path
   Allowed options:
     --help                produce this help message
-    --o arg               <PATH> output directory
+    --o arg               <PATH> output directory (default : <input_path>/output_dir)
     --i arg               <PATH> input directory
 ```
