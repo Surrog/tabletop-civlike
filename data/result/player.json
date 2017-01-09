@@ -1,0 +1,32 @@
+{
+	"PLY00001" : 
+	[
+		{
+			"description" : "",
+			"name" : "",
+			"rally_points" : 
+			[
+				[
+					3,
+					-3
+				]
+			],
+			"team" : 49
+		}
+	],
+	"PLY00002" : 
+	[
+		{
+			"description" : "",
+			"name" : "",
+			"rally_points" : 
+			[
+				[
+					-3,
+					3
+				]
+			],
+			"team" : 49
+		}
+	]
+}

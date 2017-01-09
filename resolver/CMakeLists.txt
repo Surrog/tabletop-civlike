@@ -11,7 +11,7 @@ include (xtsslib/utility.cmake)
 set (RESOLVER_VERSION_MAJOR 0)
 set (RESOLVER_VERSION_MINOR 1)
 
-find_boost_lib()
+find_boost_lib("program_options")
 
 # shortcut for directories used for the compilation
 set (RESOLVER_SERVER_DIR ${PROJECT_SOURCE_DIR}/resolver_server)

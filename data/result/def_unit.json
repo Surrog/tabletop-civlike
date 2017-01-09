@@ -1,0 +1,87 @@
+{
+	"DUN00001" : 
+	{
+		"action_points" : 5,
+		"actions" : 
+		[
+			"MOVE"
+		],
+		"attack" : 
+		[
+			"ATT00001"
+		],
+		"cover_usage" : 2,
+		"defense" : 
+		[
+			"DEF00001"
+		],
+		"description" : "Classic Infrantry",
+		"name" : "Infantry",
+		"texture" : "infantry.png"
+	},
+	"DUN00002" : 
+	{
+		"action_points" : 5,
+		"actions" : 
+		[
+			"MOVE",
+			"FIRE"
+		],
+		"attack" : 
+		[
+			"ATT00001",
+			"ATT00003"
+		],
+		"cover_usage" : 1.5,
+		"defense" : 
+		[
+			"DEF00001"
+		],
+		"description" : "Mortar Infantry",
+		"name" : "Mortar",
+		"texture" : "infantry_mortar.png"
+	},
+	"DUN00003" : 
+	{
+		"action_points" : 5,
+		"actions" : 
+		[
+			"MOVE",
+			"FIRE"
+		],
+		"attack" : 
+		[
+			"ATT00001",
+			"ATT00004"
+		],
+		"cover_usage" : 1,
+		"defense" : 
+		[
+			"DEF00002"
+		],
+		"description" : "Classic Tank",
+		"name" : "Tank",
+		"texture" : "tank.png"
+	},
+	"DUN00004" : 
+	{
+		"action_points" : 5,
+		"actions" : 
+		[
+			"MOVE",
+			"FIRE"
+		],
+		"attack" : 
+		[
+			"ATT00005"
+		],
+		"cover_usage" : 1,
+		"defense" : 
+		[
+			"DEF00003"
+		],
+		"description" : "Field Howitzer tracked by truck",
+		"name" : "Howitzer",
+		"texture" : "howitzer.png"
+	}
+}

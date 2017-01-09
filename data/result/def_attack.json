@@ -1,0 +1,67 @@
+{
+	"ATT00001" : 
+	{
+		"cost" : 0,
+		"description" : "",
+		"hard" : 0,
+		"name" : "Gun",
+		"range" : 
+		[
+			0,
+			0
+		],
+		"soft" : 60
+	},
+	"ATT00002" : 
+	{
+		"cost" : -1,
+		"description" : "",
+		"hard" : 80,
+		"name" : "Rocket",
+		"range" : 
+		[
+			0,
+			0
+		],
+		"soft" : 10
+	},
+	"ATT00003" : 
+	{
+		"cost" : -1,
+		"description" : "",
+		"hard" : 40,
+		"name" : "Mortar",
+		"range" : 
+		[
+			1,
+			2
+		],
+		"soft" : 0
+	},
+	"ATT00004" : 
+	{
+		"cost" : 1,
+		"description" : "",
+		"hard" : 50,
+		"name" : "Cannon",
+		"range" : 
+		[
+			0,
+			1
+		],
+		"soft" : 10
+	},
+	"ATT00005" : 
+	{
+		"cost" : 2,
+		"description" : "",
+		"hard" : 10,
+		"name" : "Howitzer",
+		"range" : 
+		[
+			1,
+			4
+		],
+		"soft" : 50
+	}
+}

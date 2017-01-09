@@ -1,0 +1,26 @@
+{
+	"DTI00001" : 
+	{
+		"cover" : 1,
+		"description" : "A flat piece of land",
+		"infrastructure" : 3,
+		"name" : "plain",
+		"texture" : "plain.png"
+	},
+	"DTI00002" : 
+	{
+		"cover" : 1,
+		"description" : "A hilly land",
+		"infrastructure" : 2,
+		"name" : "hill",
+		"texture" : "hill.png"
+	},
+	"DTI00003" : 
+	{
+		"cover" : 1,
+		"description" : "",
+		"infrastructure" : 0.5,
+		"name" : "Water",
+		"texture" : "water.png"
+	}
+}
