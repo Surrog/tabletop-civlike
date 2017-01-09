@@ -1,0 +1,15 @@
+{
+	"UNI00001" : 
+	[
+		{
+			"endurance" : -1,
+			"owner" : "PLY00001",
+			"position" : 
+			[
+				1,
+				-1
+			],
+			"type" : "DUN00001"
+		}
+	]
+}

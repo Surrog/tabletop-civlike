@@ -3,9 +3,15 @@
 
 #include <array>
 #include <cstddef>
+#include <iterator>
+#include <iostream>
+#include "boost/lexical_cast.hpp"
+#include "astring_view.hpp"
+#include "fast_convert.hpp"
 
 struct reference
 {
+public:
    enum T_type
    {
       NUL, //null type, for invalid reference
@@ -14,41 +20,35 @@ struct reference
       DUN, //unit definition
       PLY, //player definition
       DTI, //terrain definition
+      ATT, //attack definition
+      DEF, //defense definition
 
       SIZE //keep this one at the end
    };
 
-   T_type type;
-   std::size_t num;
+   T_type type = NUL;
+   std::size_t num = 0;
 
-   reference()
-      : type(NUL), num(0)
-   {}
-
-   reference(const reference& rval) = default;
-   reference& operator=(const reference& rval) = default;
-   reference(reference&& rval) noexcept = default;
-   reference& operator=(reference&& rval) noexcept = default;
-
-   bool operator ==(const reference& rval)
-   {
-      return type == rval.type && num == rval.num;
-   }
-
-   bool operator!=(const reference& rval)
-   {
-      return !operator==(rval);
-   }
-
-private:
    enum
    {
       PREFIX_SIZE = 4
    };
-   static constexpr std::array<std::array<const char, PREFIX_SIZE>, SIZE> converter_array =
-   {
-      "NUL", "ORD", "UNI", "DUN", "PLY", "DTI"
-   };
+
+   static const std::array<astd::string_view, SIZE> converter_array;
+
+   reference() = default;
+
+   reference(astd::string_view str);
+
+   bool operator ==(const reference& rval) const;
+
+   bool operator!=(const reference& rval) const;
+
+   bool operator<(const reference& rval) const;
+
+   std::array<char, PREFIX_SIZE + 5> serialize() const;
 };
+
+std::ostream& operator<<(std::ostream& stream, const reference& ref);
 
 #endif //!REFERENCE_HPP

@@ -1,0 +1,14 @@
+{
+  "PLY00001":{
+    "name":"Player 1",
+    "description":"",
+    "team":"A",
+    "rally_points":[[3,-3]]
+  },
+  "PLY00002":{
+    "name":"Player 2",
+    "description":"",
+    "team":"B",
+    "rally_points":[[-3,3]]
+  }
+}

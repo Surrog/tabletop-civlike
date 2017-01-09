@@ -1,0 +1,20 @@
+{
+  "DEF00001":{
+    "name":"Infantry",
+    "description":"",
+    "soft":2,
+    "hard":10
+  },
+  "DEF00002":{
+    "name":"Tank Armor plate",
+    "description":"",
+    "soft":40,
+    "hard":30
+  },
+  "DEF00003":{
+    "name":"Artillery Armor plate",
+    "description":"",
+    "soft":10,
+    "hard":20
+  }
+}

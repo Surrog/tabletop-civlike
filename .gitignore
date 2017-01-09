@@ -16,3 +16,4 @@
 *.cmake
 resolver/bin/*
 resolver/generated_sources/*
+data/*/output_dir/*

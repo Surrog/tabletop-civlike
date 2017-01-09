@@ -1,0 +1,54 @@
+{
+	"UNI00002" : 
+	[
+		{
+			"endurance" : 60,
+			"owner" : "PLY00001",
+			"position" : 
+			[
+				3,
+				-2
+			],
+			"type" : "DUN00004"
+		}
+	],
+	"UNI00003" : 
+	[
+		{
+			"endurance" : 30,
+			"owner" : "PLY00002",
+			"position" : 
+			[
+				-2,
+				3
+			],
+			"type" : "DUN00002"
+		}
+	],
+	"UNI00004" : 
+	[
+		{
+			"endurance" : 70,
+			"owner" : "PLY00002",
+			"position" : 
+			[
+				-2,
+				2
+			],
+			"type" : "DUN00003"
+		}
+	],
+	"UNI00005" : 
+	[
+		{
+			"endurance" : 80,
+			"owner" : "PLY00002",
+			"position" : 
+			[
+				-3,
+				3
+			],
+			"type" : "DUN00003"
+		}
+	]
+}
