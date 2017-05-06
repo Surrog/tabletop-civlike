@@ -20,9 +20,9 @@ set (RESOLVER_VERSION_MINOR 2)
 find_boost_lib("program_options")
 
 # shortcut for directories used for the compilation
-set (RESOLVER_SERVER_DIR PATH ${PROJECT_SOURCE_DIR}/resolver_server)
-set (GENERATED_SOURCES_DIR PATH ${PROJECT_SOURCE_DIR}/generated_sources)
-set (JSONCPP_SOURCES_DIR PATH ${PROJECT_SOURCE_DIR}/jsoncpp_amalgamated)
+set (RESOLVER_SERVER_DIR ${PROJECT_SOURCE_DIR}/resolver_server)
+set (GENERATED_SOURCES_DIR ${PROJECT_SOURCE_DIR}/generated_sources)
+set (JSONCPP_SOURCES_DIR ${PROJECT_SOURCE_DIR}/jsoncpp_amalgamated)
 
 # cmake settings
 configure_file (
@@ -60,7 +60,6 @@ set (RESOLVER_SOURCES
 	${RESOLVER_SERVER_DIR}/game_resolver.cpp
 	${RESOLVER_SERVER_DIR}/game_resolver.hpp
 )
-
 
 add_executable(resolver_server ${RESOLVER_SOURCES} ${GENERATED_SOURCES} ${JSONCPP_SOURCES})
 target_link_libraries(resolver_server ${Boost_LIBRARIES})
