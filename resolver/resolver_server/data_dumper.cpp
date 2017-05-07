@@ -203,6 +203,7 @@ int data_dumper::dump_order(const astd::filesystem::path& path, const std::vecto
 
    if (std::all_of(units.begin(), units.end(), [rejected](const unit& u)
    {
+	   return u.actions.size() == 0 || (u.actions.size() && u.action_invalid != rejected);
    }))
    {
 	   return NONE;
@@ -216,17 +217,20 @@ int data_dumper::dump_order(const astd::filesystem::path& path, const std::vecto
 
       for (auto& un : units)
       {
-		  Json::Value json_unit_orders;
-		  for (auto& acc : un.actions)
+		  if (un.action_invalid == rejected)
 		  {
-			  Json::Value json_acc;
-			  json_acc["action"] = order::serialize(acc.type).data();
-			  json_acc["x"] = acc.target.x;
-			  json_acc["y"] = acc.target.y;
-			  json_unit_orders.append(json_acc);
-		  }
+			  Json::Value json_unit_orders;
+			  for (auto& acc : un.actions)
+			  {
+				  Json::Value json_acc;
+				  json_acc["action"] = order::serialize(acc.type).data();
+				  json_acc["x"] = acc.target.x;
+				  json_acc["y"] = acc.target.y;
+				  json_unit_orders.append(json_acc);
+			  }
 
-         root[un.id.serialize().data()].append(json_unit_orders);
+			  root[un.id.serialize().data()].append(json_unit_orders);
+		  }
       }
 
       stream << root;
