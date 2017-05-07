@@ -13,7 +13,7 @@ data_dumper::data_dumper(const game_data& data, const astd::filesystem::path& ta
    _status |= dump_def_map(target / "def_map.json", data.terrains);
    _status |= dump_def_unit(target / "def_unit.json", data.unit_defs);
    _status |= dump_map(target / "map.json", data.current_map);
-   _status |= dump_order(target / "order.json", data.units, false);
+   _status |= dump_order(target / "order.json", data.units, data.unit_dead, false);
    _status |= dump_order(target / "order_rejected.json", data.units, data.unit_dead, true);
    _status |= dump_player(target / "player.json", data.players);
    _status |= dump_unit(target / "unit.json", data.units);
@@ -319,7 +319,7 @@ int data_dumper::dump_unit(const astd::filesystem::path& path, const std::vector
          json_unit["position"] = coord_to_json_value(unit.pos);
          json_unit["endurance"] = unit.endurance;
 
-         root[unit.id.serialize().data()].append(json_unit);
+         root[unit.id.serialize().data()] = json_unit;
       }
 
       stream << root;

@@ -253,7 +253,6 @@ int data_parser::parse_order(const astd::filesystem::path& path)
 		std::size_t i = 0;
 		for (auto& current_obj : root)
 		{
-			order new_order;
 			auto unit_ref = reference(obj_names[i]);
 			auto unit_it = std::find_if(_data.units.begin(), _data.units.end(),
 				[&unit_ref](const unit& u) {return u.id == unit_ref; });
@@ -264,12 +263,16 @@ int data_parser::parse_order(const astd::filesystem::path& path)
 				unit_it = _data.units.insert(_data.units.end(), std::move(u));
 			}
 
-			for (auto& acc : current_obj["actions"])
+			for (auto& acc : current_obj)
 			{
 				order ord;
 				ord.type = order::parse(acc["action"].asCString());
 				ord.target = parse_coord_from_value(acc["x"].asInt(), acc["y"].asInt());
-				if (acc["modifier"].size()) ord.modifier = reference(acc["modifier"].asCString());
+				
+				if (acc["modifier"] != Json::Value())
+				{
+					ord.modifier = reference(acc["modifier"].asCString());
+				}
 				unit_it->actions.emplace_back(ord);
 			}
 	

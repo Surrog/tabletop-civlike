@@ -6,7 +6,7 @@
     "UNI00002":[
 		{"action":"MOVE", "x":3, "y":-2},
         {"action":"MOVE", "x":3, "y":-1},
-		{"action":"ATTACK", "modifier":"ATT00001", "x":3, "y":-1}
+		{"action":"FIRE", "modifier":"ATT00001", "x":3, "y":-1}
     ]
     
 }
