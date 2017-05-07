@@ -55,6 +55,7 @@ int game_resolver::status() const
 
 boost::optional<unit&> game_resolver::find_first_valid_order()
 {
+	sort_unit_per_point();
 	auto it = std::find_if(_data.units.begin(), _data.units.end(),
 		[this](const unit& unit)
 	{
@@ -101,18 +102,19 @@ void game_resolver::resolve()
 		unit.action_point_remaining = static_cast<float>(get_unit_def(unit.type).action_point);
 	}
 
-	sort_unit_per_point();
-
-	for (auto unit = find_first_valid_order(); unit.is_initialized(); )
+	for (auto unit = find_first_valid_order(); 
+		unit.is_initialized(); 
+		unit = find_first_valid_order())
 	{
 		auto& unit_ref = unit.value();
 		if (execute_order(unit_ref, unit_ref.actions.front()) != 0)
 		{
 			unit_ref.action_invalid = true;
 		}
-
-		sort_unit_per_point();
-		unit = find_first_valid_order();
+		else
+		{
+			unit_ref.actions.pop_front();
+		}		
 	}
 
 	bring_out_the_dead();

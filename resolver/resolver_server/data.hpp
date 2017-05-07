@@ -7,6 +7,7 @@
 #include <limits>
 #include <ostream>
 #include <map>
+#include <deque>
 
 #include "reference.hpp"
 #include "astring_view.hpp"
@@ -90,7 +91,7 @@ struct unit
    reference owner;
    reference type;
    coordinate pos;
-   xts::static_vector<order, 32> actions;
+   std::deque<order> actions;
    std::int32_t endurance = 0;
    float action_point_remaining = 0.f;
    bool action_invalid = false;
