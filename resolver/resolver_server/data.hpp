@@ -6,9 +6,12 @@
 #include <utility>
 #include <limits>
 #include <ostream>
+#include <map>
 
 #include "reference.hpp"
 #include "astring_view.hpp"
+#include "static_vector.hpp"
+#include "static_hashmap.hpp"
 
 struct coordinate
 {
@@ -42,8 +45,7 @@ static bool operator<(const coordinate& lval, const coordinate& rval)
 // order.json
 struct order
 {
-   enum T_type
-   {
+   enum T_type {
       NONE,
       MOVE,
       FIRE,
@@ -51,11 +53,9 @@ struct order
       SIZE
    };
 
-   reference id;
-   reference unit_source;
-   T_type type = NONE;
+   T_type type;
+   reference modifier;
    coordinate target;
-   std::string comment;
 
    static const std::array< astd::string_view, SIZE> converter_arr;
    static T_type parse(astd::string_view str);
@@ -68,7 +68,7 @@ struct map
    std::string name;
    std::string description;
    std::int32_t diameter = 0;
-   std::vector<std::pair<coordinate, reference>> grid;
+   xts::static_vector<std::pair<coordinate, reference>, 512> grid;
 };
 
 //def_attack.json & def_defense.json
@@ -90,8 +90,10 @@ struct unit
    reference owner;
    reference type;
    coordinate pos;
+   xts::static_vector<order, 32> actions;
    std::int32_t endurance = 0;
-   std::int32_t action_point_remaining = 0;
+   float action_point_remaining = 0.f;
+   bool action_invalid = false;
 
    enum 
    {
@@ -105,9 +107,9 @@ struct unit_definition
    reference id;
    std::string name;
    std::string description;
-   std::vector<reference> attack;
-   std::vector<reference> defense;
-   std::vector<order::T_type> order_accessible;
+   xts::static_vector<reference, 8> attack;
+   xts::static_vector<reference, 8> defense;
+   xts::static_vector<order::T_type, order::SIZE> order_accessible;
    std::int32_t action_point = 0;
    float cover_usage = 0.f;
    std::string texture;
@@ -119,7 +121,7 @@ struct player
    reference id;
    std::string name;
    std::string description;
-   std::vector<coordinate> rally_point;
+   xts::static_vector<coordinate, 8> rally_point;
    char team = 0;
 };
 
@@ -137,7 +139,6 @@ struct terrain
 
 struct game_data
 {
-   std::vector<order> orders;
    map current_map;
    std::vector<unit_action> attack_action;
    std::vector<unit_action> defense_action;

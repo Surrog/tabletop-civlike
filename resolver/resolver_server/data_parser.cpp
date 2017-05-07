@@ -166,11 +166,11 @@ int data_parser::parse_def_unit(const astd::filesystem::path& path)
 			acc.description = current_obj["description"].asString();
 			for (auto& att : current_obj["attack"])
 			{
-				acc.attack.emplace_back(reference{ att.asString() });
+				acc.attack.emplace_back(reference{ att.asCString() });
 			}
 			for (auto& def : current_obj["defense"])
 			{
-				acc.defense.emplace_back(reference{ def.asString() });
+				acc.defense.emplace_back(reference{ def.asCString() });
 			}
 
 			for (auto& ord : current_obj["actions"])
@@ -221,7 +221,7 @@ int data_parser::parse_map(const astd::filesystem::path& path)
 			auto ref_it = hexa.begin(); ref_it++;
 
 			tiles.first = parse_coord_from_value(*pos_it);
-			tiles.second = reference(ref_it->asString());
+			tiles.second = reference(ref_it->asCString());
 			acc.grid.emplace_back(std::move(tiles));
 		}
 
@@ -254,12 +254,25 @@ int data_parser::parse_order(const astd::filesystem::path& path)
 		for (auto& current_obj : root)
 		{
 			order new_order;
-			new_order.id = reference{ obj_names[i] };
-			new_order.unit_source = reference(current_obj["unit"].asString());
-			new_order.type = order::parse(current_obj["order"].asString());
-			new_order.target = parse_coord_from_value(current_obj["target"]);
+			auto unit_ref = reference(obj_names[i]);
+			auto unit_it = std::find_if(_data.units.begin(), _data.units.end(),
+				[&unit_ref](const unit& u) {return u.id == unit_ref; });
+			if (unit_it == _data.units.end())
+			{
+				unit u;
+				u.id = unit_ref;
+				unit_it = _data.units.insert(_data.units.end(), std::move(u));
+			}
 
-			_data.orders.emplace_back(new_order);
+			for (auto& acc : current_obj["actions"])
+			{
+				order ord;
+				ord.type = order::parse(acc["action"].asCString());
+				ord.target = parse_coord_from_value(acc["x"].asInt(), acc["y"].asInt());
+				if (acc["modifier"].size()) ord.modifier = reference(acc["modifier"].asCString());
+				unit_it->actions.emplace_back(ord);
+			}
+	
 			++i;
 		}
 	}
@@ -328,14 +341,22 @@ int data_parser::parse_unit(const astd::filesystem::path& path)
 		std::size_t i = 0;
 		for (auto& current_obj : root)
 		{
-			unit new_unit;
-			new_unit.id = reference{ obj_names[i] };
-			new_unit.owner = reference(current_obj["owner"].asString());
-			new_unit.type = reference(current_obj["type"].asString());
-			new_unit.pos = parse_coord_from_value(current_obj["position"]);
-			new_unit.endurance = current_obj["endurance"].asInt();
+			auto unit_ref = reference(obj_names[i]);
+			auto unit_it = std::find_if(_data.units.begin(), _data.units.end(),
+				[&unit_ref](const unit& u) {return u.id == unit_ref; });
+			if (unit_it == _data.units.end())
+			{
+				unit u;
+				u.id = unit_ref;
+				unit_it = _data.units.insert(_data.units.end(), std::move(u));
+			}
 
-			_data.units.emplace_back(new_unit);
+			unit_it->id = reference{ obj_names[i] };
+			unit_it->owner = reference(current_obj["owner"].asCString());
+			unit_it->type = reference(current_obj["type"].asCString());
+			unit_it->pos = parse_coord_from_value(current_obj["position"]);
+			unit_it->endurance = current_obj["endurance"].asInt();
+
 			++i;
 		}
 	}
@@ -389,6 +410,22 @@ int data_parser::parse_configuration_directory(const astd::filesystem::path& dir
 	return result;
 }
 
+coordinate data_parser::parse_coord_from_value(std::int32_t x, std::int32_t y)
+{
+	return { x, y, -1 * (x + y) };
+}
+
+coordinate data_parser::parse_coord_from_value(std::int32_t x, std::int32_t y, std::int32_t z)
+{
+	coordinate result{ x, y, z };
+	if ((result.x + result.y + result.z) != 0)
+	{
+		std::cerr << "WARNING : coordinate " << result << " not valid (sum not equal to zero)" << std::endl;
+	}
+
+	return result;
+}
+
 coordinate data_parser::parse_coord_from_value(const Json::Value& value)
 {
 	coordinate result;
@@ -399,9 +436,7 @@ coordinate data_parser::parse_coord_from_value(const Json::Value& value)
 	{
 		auto x_it = value.begin();
 		auto y_it = value.begin(); y_it++;
-		result.x = x_it->asInt();
-		result.y = y_it->asInt();
-		result.z = -1 * (result.x + result.y);
+		result = parse_coord_from_value(x_it->asInt(), y_it->asInt());
 	}
 
 	if (value.size() == 3)
@@ -409,13 +444,7 @@ coordinate data_parser::parse_coord_from_value(const Json::Value& value)
 		auto x_it = value.begin();
 		auto y_it = value.begin(); y_it++;
 		auto z_it = y_it; z_it++;
-		result.x = x_it->asInt();
-		result.y = y_it->asInt();
-		result.z = z_it->asInt();
-		if ((result.x + result.y + result.z) != 0)
-		{
-			std::cerr << "WARNING : coordinate " << value << " not valid (sum not equal to zero)" << std::endl;
-		}
+		result = parse_coord_from_value(x_it->asInt(), y_it->asInt(), z_it->asInt());
 	}
 
 	if (value.size() != 2 && value.size() != 3)

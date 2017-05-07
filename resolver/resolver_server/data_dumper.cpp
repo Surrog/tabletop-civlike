@@ -13,7 +13,8 @@ data_dumper::data_dumper(const game_data& data, const astd::filesystem::path& ta
    _status |= dump_def_map(target / "def_map.json", data.terrains);
    _status |= dump_def_unit(target / "def_unit.json", data.unit_defs);
    _status |= dump_map(target / "map.json", data.current_map);
-   _status |= dump_order(target / "order_rejected.json", data.orders);
+   _status |= dump_order(target / "order.json", data.units, false);
+   _status |= dump_order(target / "order_rejected.json", data.units, true);
    _status |= dump_player(target / "player.json", data.players);
    _status |= dump_unit(target / "unit.json", data.units);
    _status |= dump_unit(target / "unit_dead.json", data.unit_dead);
@@ -193,11 +194,18 @@ int data_dumper::dump_map(const astd::filesystem::path& path, const map& current
    return OPEN_FILE;
 }
 
-int data_dumper::dump_order(const astd::filesystem::path& path, const std::vector<order>& orders)
+int data_dumper::dump_order(const astd::filesystem::path& path, const std::vector<unit>& units, bool rejected)
 {
-   if (!orders.size())
+   if (!units.size())
    {
       return NONE;
+   }
+
+   if (std::all_of(units.begin(), units.end(), [rejected](const unit& u)
+   {
+   }))
+   {
+	   return NONE;
    }
 
    std::ofstream stream(path.c_str(), std::ios::trunc);
@@ -206,18 +214,19 @@ int data_dumper::dump_order(const astd::filesystem::path& path, const std::vecto
    {
       Json::Value root;
 
-      for (auto& order : orders)
+      for (auto& un : units)
       {
-         Json::Value json_order;
-         json_order["unit"] = order.unit_source.serialize().data();
-         json_order["order"] = order::serialize(order.type).data();
-         json_order["target"] = coord_to_json_value(order.target);
-		 if (order.comment.size())
-		 {
-			 json_order["comment"] = order.comment;
-		 }
+		  Json::Value json_unit_orders;
+		  for (auto& acc : un.actions)
+		  {
+			  Json::Value json_acc;
+			  json_acc["action"] = order::serialize(acc.type).data();
+			  json_acc["x"] = acc.target.x;
+			  json_acc["y"] = acc.target.y;
+			  json_unit_orders.append(json_acc);
+		  }
 
-         root[order.id.serialize().data()].append(json_order);
+         root[un.id.serialize().data()].append(json_unit_orders);
       }
 
       stream << root;

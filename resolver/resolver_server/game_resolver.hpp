@@ -5,7 +5,7 @@
 #include "data.hpp"
 #include "boost/container/flat_map.hpp"
 #include "boost/container/static_vector.hpp"
-
+#include "boost/optional.hpp"
 
 class game_resolver
 {
@@ -25,12 +25,20 @@ public:
 
 	int status() const;
 
+	boost::optional<unit&> find_first_valid_order();
+
+	float action_cost(const order & acc) const;
+
+	float get_attack_cost(const order & acc) const;
+
+	void sort_unit_per_point();
+
 	void resolve();
-	int execute_order(const order& order);
-	int execute_none(const order& order);
-	int execute_move(const order& order);
-	int execute_fire(const order& order);
-	int execute_build(const order& order);
+	int execute_order(unit& source, const order& order);
+	int execute_none(unit& source, const order& order);
+	int execute_move(unit& source, const order& order);
+	int execute_fire(unit& source, const order& order);
+	int execute_build(unit& source, const order& order);
 
 	int close_combat_action();
 	void bring_out_the_dead();
@@ -54,10 +62,14 @@ private:
 			return lval.first > rval.first;
 		}
 	};
+	
+	bool attack_in_range(const unit_action & attack_def, uint32_t distance) const;
 
+	int try_attack(unit & source, const order ord);
 	int try_attack(unit& attacker_unit, const coordinate& target, bool friendly_fire = true);
+	int try_attack(unit & attacker_unit, const coordinate & target, const unit_action& attack_def, bool friendly_fire = true);
 
-	static const std::array<int (game_resolver::*)(const order& order), order::SIZE> order_state_machine;
+	static const std::array<int (game_resolver::*)(unit& source, const order& order), order::SIZE> order_state_machine;
 	static const terrain bad_terrain_value;
 	static const coordinate bad_coordinate_value;
 	static const unit_definition bad_unit_def_value;
@@ -132,6 +144,7 @@ private:
 
 	float get_movement_cost(const coordinate& coord, const player& pla) const;
 	float get_movement_cost(const coordinate& coord) const;
+	float get_movement_cost(const order & ord) const;
 	float get_movement_cost(const std::vector<coordinate>& coords) const;
 	const terrain& get_terrain(const coordinate& coord) const;
 	const terrain& get_terrain(const reference& ref) const;

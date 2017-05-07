@@ -47,6 +47,9 @@ private:
 
    int parse_configuration_directory(const astd::filesystem::path& directory);
 
+   static coordinate parse_coord_from_value(std::int32_t x, std::int32_t y);
+
+   static coordinate parse_coord_from_value(std::int32_t x, std::int32_t y, std::int32_t z);
 
    static coordinate parse_coord_from_value(const Json::Value&);
 };

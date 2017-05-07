@@ -11,7 +11,7 @@
 #include <cassert>
 #include "boost/container/flat_map.hpp"
 
-const std::array<int (game_resolver::*)(const order& order), order::SIZE> game_resolver::order_state_machine
+const std::array<int (game_resolver::*)(unit& source, const order& order), order::SIZE> game_resolver::order_state_machine
 =
 {
    &game_resolver::execute_none,
@@ -53,82 +53,98 @@ int game_resolver::status() const
 	return _status;
 }
 
+boost::optional<unit&> game_resolver::find_first_valid_order()
+{
+	auto it = std::find_if(_data.units.begin(), _data.units.end(),
+		[this](const unit& unit)
+	{
+		return unit.actions.size() 
+			&& !unit.action_invalid 
+			&& unit.action_point_remaining >= action_cost(unit.actions.front());
+	});
+	if (it != _data.units.end())
+	{
+		return *it;
+	}
+	return {};
+}
+
+float game_resolver::action_cost(const order& acc) const
+{
+	if (acc.type == order::MOVE) return get_movement_cost(acc);
+	if (acc.type == order::FIRE) return get_attack_cost(acc);
+	if (acc.type == order::BUILD) return 0;
+	if (acc.type == order::NONE)
+		std::cerr << "WARNING : Order NONE detected" << std::endl;
+	return 0;
+
+}
+
+float game_resolver::get_attack_cost(const order& acc) const
+{
+	auto& att = get_attack(acc.modifier);
+	return static_cast<float>(att.cost);
+}
+
+void game_resolver::sort_unit_per_point()
+{
+	std::sort(_data.units.begin(), _data.units.end(), [](auto& lval, auto& rval)
+	{
+		return lval.action_point_remaining > rval.action_point_remaining;
+	});
+}
+
 void game_resolver::resolve()
 {
-	std::sort(_data.orders.begin(), _data.orders.end(), [](const auto& lval, const auto& rval)
-	{
-		return lval.type > rval.type;
-	});
-
 	for (auto& unit : _data.units)
 	{
-		unit.action_point_remaining = get_unit_def(unit.type).action_point;
+		unit.action_point_remaining = static_cast<float>(get_unit_def(unit.type).action_point);
 	}
 
-	while (_data.orders.size() && _data.orders.back().type != order::BUILD)
+	sort_unit_per_point();
+
+	for (auto unit = find_first_valid_order(); unit.is_initialized(); )
 	{
-		if (execute_order(_data.orders.back()) != 0)
+		auto& unit_ref = unit.value();
+		if (execute_order(unit_ref, unit_ref.actions.front()) != 0)
 		{
-			_order_rejected.emplace_back(std::move(_data.orders.back()));
+			unit_ref.action_invalid = true;
 		}
-		_data.orders.pop_back();
+
+		sort_unit_per_point();
+		unit = find_first_valid_order();
 	}
 
 	bring_out_the_dead();
 	close_combat_action();
 	bring_out_the_dead();
-
-
-	while (_data.orders.size())
-	{
-		if (execute_order(_data.orders.back()) != 0)
-		{
-			_order_rejected.emplace_back(std::move(_data.orders.back()));
-		}
-		_data.orders.pop_back();
-	}
-
-	bring_out_the_dead();
-
-	_data.orders = _order_rejected;
 }
 
-int game_resolver::execute_order(const order& order)
+int game_resolver::execute_order(unit& source, const order& order)
 {
-	return (this->*order_state_machine[order.type])(order);
+	return (this->*order_state_machine[order.type])(source, order);
 }
 
-int game_resolver::execute_none(const order& order)
+int game_resolver::execute_none(unit& source, const order& order)
 {
-	std::cerr << "WARNING : trying to execute none order - ref:" << order.id << std::endl;
+	std::cerr << "WARNING : trying to execute none order - ref:" << order.type << std::endl;
 	return 0;
 }
 
-int game_resolver::execute_move(const order& order)
+int game_resolver::execute_move(unit& source, const order& order)
 {
-	auto& unit = get_unit(order.unit_source);
 	int result = NONE;
-	if (unit.action_point_remaining > 0)
+	auto nearby = neighbors(source.pos);
+
+	if (std::find(nearby.begin(), nearby.end(), order.target) != nearby.end())
 	{
-		auto path = find_path_linear(unit, order.target);
-		if (path.first < unit.action_point_remaining &&
-			path.second.size())
-		{
-			unit.pos = order.target;
-			unit.action_point_remaining -= static_cast<std::uint32_t>(std::ceil(path.first));
-		}
-		else
-		{
-			_order_rejected.push_back(order);
-			result = ORDER_REFUSED;
-		}
+		source.pos = order.target;
+		source.action_point_remaining -= get_movement_cost(order);
 	}
 	else
 	{
-		_order_rejected.push_back(order);
 		result = ORDER_REFUSED;
 	}
-
 	return result;
 }
 
@@ -145,65 +161,101 @@ unit_action game_resolver::calculate_unit_defense(const unit_definition& unit_de
 	return result;
 }
 
-int game_resolver::execute_fire(const order& order)
+int game_resolver::execute_fire(unit& source, const order& order)
 {
-	return try_attack(get_unit(order.unit_source), order.target, true);
+	return try_attack(source, order.target, true);
+}
+
+int game_resolver::try_attack(unit& attacker_unit, const coordinate& target, const unit_action& att, bool friendly_fire)
+{
+	const auto& terrain = get_terrain(target);
+	auto attacking_team = get_player(attacker_unit.owner).team;
+
+	for (auto& targeted_unit : get_units(target))
+	{
+		if (friendly_fire || (get_player(targeted_unit.get().owner).team != attacking_team))
+		{
+			const auto& target_def = get_unit_def(targeted_unit.get().type);
+			auto unit_targeted_def = calculate_unit_defense(target_def);
+			float floating_damage = std::max((att.soft - (unit_targeted_def.soft * terrain.cover * target_def.cover_usage))
+				+ (att.hard - (unit_targeted_def.hard * terrain.cover * target_def.cover_usage)), 0.f);
+			if (attacker_unit.endurance < 80)
+				floating_damage = floating_damage * attacker_unit.endurance / 100;
+			targeted_unit.get().endurance -= static_cast<std::uint32_t>(std::floor(floating_damage));
+		}
+	}
+
+	if (att.cost >= 0)
+		attacker_unit.action_point_remaining -= att.cost;
+	else
+		attacker_unit.action_point_remaining = 0;
+
+	return NONE;
+}
+
+
+int game_resolver::try_attack(unit& source, const order ord)
+{
+	int result = NONE;
+
+	if (source.endurance < 20)
+		return result;
+
+	auto& unit_def = get_unit_def(source.type);
+	if (std::find(unit_def.attack.begin(), unit_def.attack.end(), ord.modifier) == unit_def.attack.end())
+	{
+		result = ORDER_REFUSED;
+	}
+
+	auto& attack_def = get_attack(ord.modifier);
+	auto dis = distance(source.pos, ord.target);
+	if (!attack_in_range(attack_def, dis))
+	{
+		result = ORDER_REFUSED;
+	}
+
+	if (result == NONE)
+	{
+		result = try_attack(source, ord.target, attack_def, dis != 0);
+	}
+
+	return result;
+}
+
+bool game_resolver::attack_in_range(const unit_action& attack_def, uint32_t distance) const 
+{
+	return attack_def.range[0] <= distance && attack_def.range[1] >= distance;
 }
 
 int game_resolver::try_attack(unit& attacker_unit, const coordinate& target, bool friendly_fire)
 {
-	int result = 0;
+	int result = NONE;
 
-	if (attacker_unit.action_point_remaining > 0)
+	if (attacker_unit.endurance < 20)
+		return result;
+
+	auto& attacker_def = get_unit_def(attacker_unit.type);
+	auto dis = distance(attacker_unit.pos, target);
+	auto att_it = std::find_if(attacker_def.attack.begin(), attacker_def.attack.end(), [&dis, acc = attacker_unit.action_point_remaining, this](const auto& ref) {
+		auto& att = get_attack(ref);
+		bool point_ok = att.cost > 0 ? att.cost < acc : acc > 0;
+		return point_ok && attack_in_range(att, dis);
+	});
+
+	if (att_it != attacker_def.attack.end())
 	{
-		if (attacker_unit.endurance < 20)
-			return NONE;
-
-		auto& attacker_def = get_unit_def(attacker_unit.type);
-		auto dis = distance(attacker_unit.pos, target);
-		auto att_it = find_if(attacker_def.attack.begin(), attacker_def.attack.end(), [&dis, acc = attacker_unit.action_point_remaining, this](const auto& ref) {
-			auto& att = get_attack(ref);
-			bool point_ok = att.cost > 0 ? att.cost < acc : acc > 0;
-			return point_ok &&
-				att.range[0] <= dis && att.range[1] >= dis;
-		});
-
-		if (att_it != attacker_def.attack.end())
-		{
-			const auto& att = get_attack(*att_it);
-			const auto& terrain = get_terrain(target);
-			auto attacking_team = get_player(attacker_unit.owner).team;
-
-			for (auto& targeted_unit : get_units(target))
-			{
-				if (friendly_fire || (get_player(targeted_unit.get().owner).team != attacking_team))
-				{
-					const auto& target_def = get_unit_def(targeted_unit.get().type);
-					auto unit_targeted_def = calculate_unit_defense(target_def);
-					float floating_damage = std::max((att.soft - (unit_targeted_def.soft * terrain.cover * target_def.cover_usage))
-						+ (att.hard - (unit_targeted_def.hard * terrain.cover * target_def.cover_usage)), 0.f);
-					if (attacker_unit.endurance < 80)
-						floating_damage = floating_damage * attacker_unit.endurance / 100;
-					targeted_unit.get().endurance -= static_cast<std::uint32_t>(std::floor(floating_damage));
-				}
-			}
-
-			if (att.cost >= 0)
-				attacker_unit.action_point_remaining -= att.cost;
-			else
-				attacker_unit.action_point_remaining = 0;
-
-			return NONE;
-		}
+		return try_attack(attacker_unit, target, get_attack(*att_it), friendly_fire);
 	}
 	result = ORDER_REFUSED;
 	return result;
 }
 
-int game_resolver::execute_build(const order& order)
+
+
+int game_resolver::execute_build(unit& source, const order& order)
 {
-	std::cerr << "WARNING : BUILD action not yet implemented - ref " << order.id << std::endl;
-	return 0;
+	std::cerr << "WARNING : BUILD action not yet implemented - source " << source.id << std::endl;
+	return 1;
 }
 
 int game_resolver::close_combat_action()
@@ -268,12 +320,6 @@ void game_resolver::bring_out_the_dead()
 {
 	std::sort(_data.units.begin(), _data.units.end(), [](const auto& lval, const auto& rval) {return lval.endurance > rval.endurance; });
 	auto unit_to_delete_it = std::find_if(_data.units.begin(), _data.units.end(), [](const auto& unit) {return unit.endurance <= 0; });
-	auto order_to_delete = std::remove_if(_data.orders.begin(), _data.orders.end(), [unit_to_delete_it, unit_end = _data.units.end()](const auto& order)
-	{
-		return std::find_if(unit_to_delete_it, unit_end, [order](const auto& dead_unit)
-		{ return order.unit_source == dead_unit.id; }) != unit_end;
-	});
-	_data.orders.erase(order_to_delete, _data.orders.end());
 	std::for_each(unit_to_delete_it, _data.units.end(), [this](auto&& unit_dead){ _data.unit_dead.emplace_back(unit_dead); });
 	_data.units.erase(unit_to_delete_it, _data.units.end());
 }
@@ -365,6 +411,11 @@ float game_resolver::get_movement_cost(const coordinate& coord) const
 	if (infra == 0.f)
 		return std::numeric_limits<float>::max() / 3.f;
 	return 1.f / infra;
+}
+
+float game_resolver::get_movement_cost(const order& ord) const
+{
+	return get_movement_cost(ord.target);
 }
 
 float game_resolver::get_movement_cost(const std::vector<coordinate>& coords) const

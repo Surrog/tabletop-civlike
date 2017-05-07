@@ -1,23 +1,12 @@
 {
-    "ORD00001":{
-        "origin":"UNI00001",
-        "actions":[
-            {"action":"MOVE", "x":1, "y":-1},
-            {"action":"MOVE", "x":1, "y":0}
-        ]
-    },
-    "ORD00002":{
-        "origin":"UNI00002",
-        "actions":[
-            {"action":"MOVE", "x":3, "y":-2},
-            {"action":"MOVE", "x":3, "y":-1}
-        ]
-    },
-    "ORD00003":{
-        "origin":"UNI00002",
-        "actions":[
-            {"action":"MOVE", "x":1, "y":0},
-            {"action":"MOVE", "x":1, "y":-1}
-        ]
-    }
+    "UNI00001":[
+		{"action":"MOVE", "x":1, "y":-1},
+        {"action":"MOVE", "x":1, "y":0}
+    ],
+    "UNI00002":[
+		{"action":"MOVE", "x":3, "y":-2},
+        {"action":"MOVE", "x":3, "y":-1},
+		{"action":"ATTACK", "modifier":"ATT00001", "x":3, "y":-1}
+    ]
+    
 }
