@@ -29,7 +29,7 @@ private:
 
    int dump_map(const astd::filesystem::path& path, const map& current_map);
 
-   int dump_order(const astd::filesystem::path& path, const std::vector<unit>& orders, bool rejected);
+   int dump_order(const astd::filesystem::path& path, const std::vector<unit>& orders, const std::vector<unit>& dead_units, bool rejected);
 
    int dump_player(const astd::filesystem::path& path, const std::vector<player>& players);
 

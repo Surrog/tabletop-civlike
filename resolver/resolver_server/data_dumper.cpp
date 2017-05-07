@@ -14,7 +14,7 @@ data_dumper::data_dumper(const game_data& data, const astd::filesystem::path& ta
    _status |= dump_def_unit(target / "def_unit.json", data.unit_defs);
    _status |= dump_map(target / "map.json", data.current_map);
    _status |= dump_order(target / "order.json", data.units, false);
-   _status |= dump_order(target / "order_rejected.json", data.units, true);
+   _status |= dump_order(target / "order_rejected.json", data.units, data.unit_dead, true);
    _status |= dump_player(target / "player.json", data.players);
    _status |= dump_unit(target / "unit.json", data.units);
    _status |= dump_unit(target / "unit_dead.json", data.unit_dead);
@@ -194,17 +194,25 @@ int data_dumper::dump_map(const astd::filesystem::path& path, const map& current
    return OPEN_FILE;
 }
 
-int data_dumper::dump_order(const astd::filesystem::path& path, const std::vector<unit>& units, bool rejected)
+int data_dumper::dump_order(const astd::filesystem::path& path, const std::vector<unit>& units, const std::vector<unit>& dead_units, bool rejected)
 {
-   if (!units.size())
+   if (!units.size() && !dead_units.size())
    {
       return NONE;
    }
 
-   if (std::all_of(units.begin(), units.end(), [rejected](const unit& u)
+   bool no_order_to_dump = std::all_of(units.begin(), units.end(), [rejected](const unit& u)
+	   {
+		   return u.actions.size() == 0 || (u.actions.size() && u.action_invalid != rejected);
+   });
+
+   if (rejected)
    {
-	   return u.actions.size() == 0 || (u.actions.size() && u.action_invalid != rejected);
-   }))
+	   no_order_to_dump = no_order_to_dump || std::all_of(dead_units.begin(), dead_units.end(),
+		   [](const unit& un) { return un.actions.size(); });
+   }
+
+   if (no_order_to_dump)
    {
 	   return NONE;
    }
@@ -232,6 +240,24 @@ int data_dumper::dump_order(const astd::filesystem::path& path, const std::vecto
 			  root[un.id.serialize().data()].append(json_unit_orders);
 		  }
       }
+
+	  if (rejected)
+	  {
+		  for (auto& un : dead_units)
+		  {
+			  Json::Value json_unit_orders;
+			  for (auto& acc : un.actions)
+			  {
+				  Json::Value json_acc;
+				  json_acc["action"] = order::serialize(acc.type).data();
+				  json_acc["x"] = acc.target.x;
+				  json_acc["y"] = acc.target.y;
+				  json_unit_orders.append(json_acc);
+			  }
+
+			  root[un.id.serialize().data()].append(json_unit_orders);
+		  }
+	  }
 
       stream << root;
       return NONE;
