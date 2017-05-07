@@ -1,32 +1,28 @@
 {
 	"PLY00001" : 
-	[
-		{
-			"description" : "",
-			"name" : "",
-			"rally_points" : 
+	{
+		"description" : "",
+		"name" : "Player 1",
+		"rally_points" : 
+		[
 			[
-				[
-					3,
-					-3
-				]
-			],
-			"team" : 49
-		}
-	],
+				3,
+				-3
+			]
+		],
+		"team" : "A"
+	},
 	"PLY00002" : 
-	[
-		{
-			"description" : "",
-			"name" : "",
-			"rally_points" : 
+	{
+		"description" : "",
+		"name" : "Player 2",
+		"rally_points" : 
+		[
 			[
-				[
-					-3,
-					3
-				]
-			],
-			"team" : 49
-		}
-	]
+				-3,
+				3
+			]
+		],
+		"team" : "B"
+	}
 }

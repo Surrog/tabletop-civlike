@@ -283,13 +283,13 @@ int data_dumper::dump_player(const astd::filesystem::path& path, const std::vect
          Json::Value json_player;
          json_player["name"] = player.name;
          json_player["description"] = player.description;
-         json_player["team"] = player.team;
+         json_player["team"] = std::string() + player.team;
          for (auto& rally : player.rally_point)
          {
             json_player["rally_points"].append(coord_to_json_value(rally));
          }
 
-         root[player.id.serialize().data()].append(json_player);
+         root[player.id.serialize().data()] = json_player;
       }
 
       stream << root;

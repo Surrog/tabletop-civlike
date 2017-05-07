@@ -307,8 +307,16 @@ int data_parser::parse_player(const astd::filesystem::path& path)
 		{
 			player new_player;
 			new_player.id = reference{ obj_names[i] };
+			new_player.name = current_obj["name"].asString();
 			new_player.description = current_obj["description"].asString();
-			new_player.team = current_obj["team"].size() ? current_obj["team"].asCString()[0] : '1';
+			if (current_obj["team"] != Json::Value())
+			{
+				new_player.team = current_obj["team"].asCString()[0];
+			}
+			else
+			{
+				new_player.team = '1';
+			}
 			for (auto& new_rally : current_obj["rally_points"])
 			{
 				new_player.rally_point.emplace_back(parse_coord_from_value(new_rally));
